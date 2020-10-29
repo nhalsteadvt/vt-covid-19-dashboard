@@ -15,12 +15,10 @@ import java.util.ArrayList;
 public class DataParser {
 
     private static ArrayList<Entry> dataCollection;
-    private static ArrayList<String> rawDataOrdered;
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws IOException {
         File dash = null;
         dataCollection = new ArrayList<>();
-        rawDataOrdered = new ArrayList<>();
 
         try {
             dash = new File("Data\\dashboard.txt");
@@ -32,12 +30,41 @@ public class DataParser {
             System.out.println(err.getMessage());
         }
 
+        parseFile(dash);
+        for (int i = 0; i < dataCollection.size(); i++) {
+            System.out.println(dataCollection.get(i).toString());
+        }
+
     }
 
 
     public static void parseFile(File dash) throws IOException {
         RandomAccessFile dashReader = new RandomAccessFile(dash, "r");
         int numLines = lineCounter(dash);
+        dashReader.readLine(); // reads first line with headings and no data
+        int currLineNum = 1;
+        int lastByte = 0;
+
+        while (lastByte != -1) {
+            lastByte = dashReader.read();
+            String line = dashReader.readLine();
+            if (line == null) {
+                break;
+            }
+            // System.out.println(line);
+            currLineNum++;
+            int day = numLines - currLineNum;
+            String noDate = line.substring(line.indexOf("\t") + 1);
+            String noTests = noDate.substring(noDate.indexOf("\t") + 1);
+            int tests = Integer.parseInt((noDate.substring(0, noDate.indexOf(
+                "\t"))).replace(",", ""));
+            int positive = Integer.parseInt((noTests.substring(0, noTests
+                .indexOf("\t"))).replace(",", ""));
+            Entry temp = new Entry(day, tests, positive);
+            // System.out.println("temp: " + temp.toString());
+            dataCollection.add(0, temp);
+
+        }
 
         dashReader.close();
 
@@ -57,7 +84,7 @@ public class DataParser {
 
         fileReader.close();
 
-        return numLines - 1;
+        return numLines;
     }
 
 }

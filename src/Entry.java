@@ -32,4 +32,21 @@ public class Entry {
         return positive;
     }
 
+
+    public double calcPercentage() {
+        if (tests == 0) {
+            return 0;
+        }
+        return ((double)positive) / tests;
+    }
+
+
+    public String toString() {
+        String ans = String.format("%d: %d/%d = %.4f%s", day, positive, tests,
+            100 * calcPercentage(), "%");
+        return ans;
+        // "" + day + ": " + positive + "/" + tests + " = "
+        // + calcPercentage();
+    }
+
 }
