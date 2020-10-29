@@ -17,18 +17,18 @@ import java.util.ArrayList;
  */
 public class DataParser {
 
-    private static ArrayList<Entry> dataCollection; // this contains all of the
-                                                    // Entry objects
+    private ArrayList<Entry> dataCollection; // contains Entry objects
+    private File dash;
 
-    public static void main(String[] args) throws IOException {
-        File dash = null;
+    public DataParser(String file) throws IOException {
+        this.dash = null;
         dataCollection = new ArrayList<>();
 
         // this block ensures the file exists where it is expected
         try {
-            dash = new File("Data\\dashboard.txt");
+            dash = new File(file);
             if (!dash.exists()) {
-                throw new FileNotFoundException(args[0]);
+                throw new FileNotFoundException(file);
             }
         }
         catch (FileNotFoundException err) {
@@ -37,12 +37,6 @@ public class DataParser {
 
         // call to method to add Entry objects to the dataCollection object
         parseFile(dash);
-
-        // this block is for debugging purposes
-        for (int i = 0; i < dataCollection.size(); i++) {
-            System.out.println(dataCollection.get(i).toString());
-        }
-
     }
 
 
@@ -56,9 +50,11 @@ public class DataParser {
      * Postcondition: The file is left unaltered; there are no data leaks
      * 
      * @param dash
+     *            The File object that will be parsed for entries
      * @throws IOException
+     *             Thrown if the File is not found
      */
-    public static void parseFile(File dash) throws IOException {
+    public void parseFile(File dash) throws IOException {
         RandomAccessFile dashReader = new RandomAccessFile(dash, "r");
         int numLines = lineCounter(dash);
         dashReader.readLine(); // reads first line with headings and no data
@@ -95,8 +91,9 @@ public class DataParser {
      *            The input file
      * @return int for how many visible lines there are in the file
      * @throws IOException
+     *             Thrown if the File is not found
      */
-    public static int lineCounter(File file) throws IOException {
+    public int lineCounter(File file) throws IOException {
         RandomAccessFile fileReader = new RandomAccessFile(file, "r");
         int numLines = 0;
         int lastByte = 0;
@@ -111,8 +108,24 @@ public class DataParser {
         }
 
         fileReader.close();
-        System.out.println(numLines);
         return numLines;
+    }
+
+
+    /**
+     * Overrides default toString() method to return all stored Entry objects
+     * String builder is used for efficiency
+     * Last char (deleted) is extra newline
+     */
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < dataCollection.size(); i++) {
+            sb.append(dataCollection.get(i).toString());
+            sb.append("\n");
+        }
+        sb.deleteCharAt(sb.length() - 1);
+        return sb.toString();
     }
 
 }
