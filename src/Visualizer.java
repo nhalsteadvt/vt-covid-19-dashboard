@@ -19,28 +19,32 @@ public class Visualizer extends Application {
         String file = this.getParameters().getUnnamed().get(0);
         data = new DataParser(file);
         System.out.println(data.toString());
+        System.out.println(Entry.findMaxPercentage(data.getEntries()));
 
         // Defining the x axis
-        NumberAxis xAxis = new NumberAxis(1960, 2020, 10);
-        xAxis.setLabel("Years");
+        int numEntries = data.getEntries().size();
+        NumberAxis xAxis = new NumberAxis(0, numEntries, numEntries / 10);
+        xAxis.setLabel("Days Since 08/03/20");
 
         // Defining the y axis
-        NumberAxis yAxis = new NumberAxis(0, 350, 50);
-        yAxis.setLabel("No.of schools");
+        double maxPercent = Entry.findMaxPercentage(data.getEntries());
+        NumberAxis yAxis = new NumberAxis(0, 1.2 * maxPercent, 0.12
+            * maxPercent);
+        yAxis.setLabel("Percent positive");
 
         // Creating the line chart
         LineChart linechart = new LineChart(xAxis, yAxis);
 
         // Prepare XYChart.Series objects by setting data
         XYChart.Series series = new XYChart.Series();
-        series.setName("No of schools in an year");
+        series.setName("Daily percent positive");
 
-        series.getData().add(new XYChart.Data(1970, 15));
-        series.getData().add(new XYChart.Data(1980, 30));
-        series.getData().add(new XYChart.Data(1990, 60));
-        series.getData().add(new XYChart.Data(2000, 120));
-        series.getData().add(new XYChart.Data(2013, 240));
-        series.getData().add(new XYChart.Data(2014, 300));
+        for (Entry entry : data.getEntries()) {
+            double percent = entry.calcPercentage();
+            if (percent <= 1) {
+                series.getData().add(new XYChart.Data(entry.getDay(), percent));
+            }
+        }
 
         // Setting the data to Line chart
         linechart.getData().add(series);
@@ -52,7 +56,7 @@ public class Visualizer extends Application {
         Scene scene = new Scene(root, 600, 400);
 
         // Setting title to the Stage
-        stage.setTitle("Line Chart");
+        stage.setTitle("My Covid-19 Graph");
 
         // Adding scene to the stage
         stage.setScene(scene);

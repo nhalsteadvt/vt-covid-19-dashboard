@@ -20,6 +20,15 @@ public class DataParser {
     private ArrayList<Entry> dataCollection; // contains Entry objects
     private File dash;
 
+    /**
+     * DataParser object is used to parse a file to collect relevant data into
+     * Entry objects
+     * 
+     * @param file
+     *            String with assumed valid file location
+     * @throws IOException
+     *             Thrown if the file is not found
+     */
     public DataParser(String file) throws IOException {
         this.dash = null;
         dataCollection = new ArrayList<>();
@@ -41,6 +50,16 @@ public class DataParser {
 
 
     /**
+     * Gets the ArrayList of Entry objects
+     * 
+     * @return ArrayList<Entry> dataCollection
+     */
+    public ArrayList<Entry> getEntries() {
+        return dataCollection;
+    }
+
+
+    /**
      * This method will parse a file and add entries to the dataCollection
      * object based on contents of the file
      * 
@@ -54,7 +73,7 @@ public class DataParser {
      * @throws IOException
      *             Thrown if the File is not found
      */
-    public void parseFile(File dash) throws IOException {
+    private void parseFile(File dash) throws IOException {
         RandomAccessFile dashReader = new RandomAccessFile(dash, "r");
         int numLines = lineCounter(dash);
         dashReader.readLine(); // reads first line with headings and no data
@@ -93,7 +112,7 @@ public class DataParser {
      * @throws IOException
      *             Thrown if the File is not found
      */
-    public int lineCounter(File file) throws IOException {
+    private int lineCounter(File file) throws IOException {
         RandomAccessFile fileReader = new RandomAccessFile(file, "r");
         int numLines = 0;
         int lastByte = 0;

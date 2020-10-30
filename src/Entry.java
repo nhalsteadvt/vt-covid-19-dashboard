@@ -1,3 +1,5 @@
+import java.util.ArrayList;
+
 /**
  * 
  */
@@ -69,6 +71,18 @@ public class Entry {
             return 0;
         }
         return ((double)positive) / tests;
+    }
+
+
+    public static double findMaxPercentage(ArrayList<Entry> entries) {
+        double ans = -1;
+        for (Entry entry : entries) {
+            double percent = entry.calcPercentage();
+            if (percent > ans && percent <= 1) {
+                ans = entry.calcPercentage();
+            }
+        }
+        return ans;
     }
 
 
