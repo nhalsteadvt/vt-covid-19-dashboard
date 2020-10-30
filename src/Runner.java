@@ -1,5 +1,3 @@
-import java.io.IOException;
-
 /**
  * 
  */
@@ -14,13 +12,15 @@ public class Runner {
      * Contains main method for project
      * 
      * @param args
-     *            Unused; future usage is considered
-     * @throws IOException
-     *             Thrown if the File is not found
+     *            Unnecessary, but only one argument (file location) is
+     *            permitted
      */
-    public static void main(String[] args) throws IOException {
-        DataParser parser = new DataParser("Data\\dashboard.txt");
-        System.out.println(parser.toString());
+    public static void main(String[] args) {
+        String[] backup = new String[] { "Data\\\\dashboard.txt" };
+        if (args.length != 1) {
+            args = backup;
+        }
+        Visualizer.launch(Visualizer.class, args);
     }
 
 }
