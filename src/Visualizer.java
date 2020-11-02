@@ -61,9 +61,10 @@ public class Visualizer extends Application {
         stage.setTitle("My Covid-19 Graph");
 
         // Creating Buttons
-        Button button1 = new Button("Test") {
+        Button button1 = new Button("Clear") {
             public void fire() {
-                System.out.println("HELLLOOO");
+                System.out.println("Goodbye");
+                series.getData().clear();
             }
         };
 
@@ -71,20 +72,20 @@ public class Visualizer extends Application {
         GridPane gridPane = new GridPane();
 
         // Setting size for the pane
-        gridPane.setMinSize(400, 200);
+        gridPane.setMinSize(600, 400);
 
         // Setting the padding
         gridPane.setPadding(new Insets(10, 10, 10, 10));
 
         // Setting the vertical and horizontal gaps between the columns
-        gridPane.setVgap(5);
-        gridPane.setHgap(5);
+        gridPane.setVgap(10);
+        gridPane.setHgap(10);
 
         // Setting the Grid alignment
         gridPane.setAlignment(Pos.CENTER);
 
         // Arranging all the nodes in the grid
-        gridPane.add(button1, 0, 2);
+        gridPane.add(button1, 45, 0);
 
         // add gridPane to root
         root.getChildren().add(gridPane);
@@ -97,10 +98,5 @@ public class Visualizer extends Application {
 
         // Displaying the contents of the stage
         stage.show();
-    }
-
-
-    public static void main(String args[]) {
-        launch(args);
     }
 }
