@@ -1,10 +1,14 @@
 import java.io.IOException;
 import javafx.application.Application;
+import javafx.geometry.Insets;
+import javafx.geometry.Pos;
 import javafx.scene.Group;
 import javafx.scene.Scene;
 import javafx.scene.chart.LineChart;
 import javafx.scene.chart.NumberAxis;
 import javafx.scene.chart.XYChart;
+import javafx.scene.control.Button;
+import javafx.scene.layout.GridPane;
 import javafx.stage.Stage;
 
 /**
@@ -28,7 +32,7 @@ public class Visualizer extends Application {
 
         // Defining the y axis
         double maxPercent = Entry.findMaxPercentage(data.getEntries());
-        NumberAxis yAxis = new NumberAxis(0, 1.2 * maxPercent, 0.12
+        NumberAxis yAxis = new NumberAxis(0, 1.2 * 100 * maxPercent, 0.12 * 100
             * maxPercent);
         yAxis.setLabel("Percent positive");
 
@@ -42,7 +46,8 @@ public class Visualizer extends Application {
         for (Entry entry : data.getEntries()) {
             double percent = entry.calcPercentage();
             if (percent <= 1) {
-                series.getData().add(new XYChart.Data(entry.getDay(), percent));
+                series.getData().add(new XYChart.Data(entry.getDay(), 100
+                    * percent));
             }
         }
 
@@ -52,11 +57,40 @@ public class Visualizer extends Application {
         // Creating a Group object
         Group root = new Group(linechart);
 
-        // Creating a scene object
-        Scene scene = new Scene(root, 600, 400);
-
         // Setting title to the Stage
         stage.setTitle("My Covid-19 Graph");
+
+        // Creating Buttons
+        Button button1 = new Button("Test") {
+            public void fire() {
+                System.out.println("HELLLOOO");
+            }
+        };
+
+        // Creating a Grid Pane
+        GridPane gridPane = new GridPane();
+
+        // Setting size for the pane
+        gridPane.setMinSize(400, 200);
+
+        // Setting the padding
+        gridPane.setPadding(new Insets(10, 10, 10, 10));
+
+        // Setting the vertical and horizontal gaps between the columns
+        gridPane.setVgap(5);
+        gridPane.setHgap(5);
+
+        // Setting the Grid alignment
+        gridPane.setAlignment(Pos.CENTER);
+
+        // Arranging all the nodes in the grid
+        gridPane.add(button1, 0, 2);
+
+        // add gridPane to root
+        root.getChildren().add(gridPane);
+
+        // Creating a scene object
+        Scene scene = new Scene(root, 600, 400);
 
         // Adding scene to the stage
         stage.setScene(scene);
