@@ -12,6 +12,7 @@ public class Entry {
     private int day;
     private int tests;
     private int positive;
+    private double movingPercentage;
     private double percentage;
 
     /**
@@ -24,10 +25,11 @@ public class Entry {
      * @param positive
      *            how many of those tests were positive for Covid-19
      */
-    public Entry(int day, int tests, int positive) {
+    public Entry(int day, int tests, int positive, double movingPercentage) {
         this.day = day;
         this.tests = tests;
         this.positive = positive;
+        this.movingPercentage = movingPercentage;
         this.percentage = calcPercentage();
     }
 
@@ -59,6 +61,16 @@ public class Entry {
      */
     public int getPositive() {
         return positive;
+    }
+
+
+    /**
+     * Gets the 7-day moving positive percentage of Entry (and previous 6 days)
+     * 
+     * @return double 7-day moving percentage
+     */
+    public double getMovingPercentage() {
+        return movingPercentage;
     }
 
 

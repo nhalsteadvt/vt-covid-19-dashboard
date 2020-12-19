@@ -107,13 +107,23 @@ public class DataParser {
             }
             currLineNum++;
             int day = numLines - currLineNum;
+
+            // the string of the entry after Date
             String noDate = line.substring(line.indexOf("\t") + 1);
+            // the string of the entry after Tests
             String noTests = noDate.substring(noDate.indexOf("\t") + 1);
+            // the string of the entry after Pos
+            String noPos = noTests.substring(noTests.indexOf("\t") + 1); // unused
+            // the string of the entry after 7d Mov Avg Pos
+            String noMovAvgPos = noPos.substring(noPos.indexOf("\t") + 1);
+
             int tests = Integer.parseInt((noDate.substring(0, noDate.indexOf(
                 "\t"))).replace(",", ""));
             int positive = Integer.parseInt((noTests.substring(0, noTests
                 .indexOf("\t"))).replace(",", ""));
-            Entry temp = new Entry(day, tests, positive);
+            double moving = Double.parseDouble((noMovAvgPos.substring(0,
+                noMovAvgPos.indexOf("\t"))).replace(",", ""));
+            Entry temp = new Entry(day, tests, positive, moving);
             dataCollection.add(0, temp);
         }
 
