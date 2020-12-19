@@ -1,4 +1,4 @@
-Date	Total Tests	Total Positive Tests	7 Day Moving Average Positives	7 Day Average of Percent Positive Tests
+Date	Tests	Pos	7d Mov Avg Pos	7d Avg % Pos
 12/17	468	8	2.71	1.4%
 12/16	100	0	2.57	1.4%
 12/15	363	5	3.00	1.5%
