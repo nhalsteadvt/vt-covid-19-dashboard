@@ -60,6 +60,24 @@ public class DataParser {
 
 
     /**
+     * Finds the maximum percentage in the list of Entry objects
+     * Excludes entries above 100%
+     * 
+     * @return double representing the maximum percentage
+     */
+    public double findMaxPercentage() {
+        double ans = -1;
+        for (Entry entry : dataCollection) {
+            double percent = entry.getPercentage();
+            if (percent > ans && percent <= 1) {
+                ans = entry.getPercentage();
+            }
+        }
+        return ans;
+    }
+
+
+    /**
      * This method will parse a file and add entries to the dataCollection
      * object based on contents of the file
      * 
@@ -141,6 +159,8 @@ public class DataParser {
         StringBuilder sb = new StringBuilder();
         for (int i = 0; i < dataCollection.size(); i++) {
             sb.append(dataCollection.get(i).toString());
+            sb.append(" | " + dataCollection.get(i).calcMovingAverage(
+                dataCollection));
             sb.append("\n");
         }
         sb.deleteCharAt(sb.length() - 1);

@@ -12,6 +12,7 @@ public class Entry {
     private int day;
     private int tests;
     private int positive;
+    private double percentage;
 
     /**
      * 
@@ -27,6 +28,7 @@ public class Entry {
         this.day = day;
         this.tests = tests;
         this.positive = positive;
+        this.percentage = calcPercentage();
     }
 
 
@@ -60,13 +62,18 @@ public class Entry {
     }
 
 
+    public double getPercentage() {
+        return percentage;
+    }
+
+
     /**
      * This method calculates the percentage positive out of the total tests.
      * If the denominator (tests performed) is zero, zero is returned.
      * 
      * @return double representing the percentage positive
      */
-    public double calcPercentage() {
+    private double calcPercentage() {
         if (tests == 0) {
             return 0;
         }
@@ -74,13 +81,35 @@ public class Entry {
     }
 
 
-    public static double findMaxPercentage(ArrayList<Entry> entries) {
-        double ans = -1;
-        for (Entry entry : entries) {
-            double percent = entry.calcPercentage();
-            if (percent > ans && percent <= 1) {
-                ans = entry.calcPercentage();
+    public double calcMovingAverage(ArrayList<Entry> entries) {
+        int idx = -1;
+        for (int i = 0; i < entries.size(); i++) {
+            if (entries.get(i) == this) {
+                idx = i;
             }
+        }
+        if (idx < 6) {
+            return -1;
+        }
+
+        int pos = 0;
+        int tst = 0;
+        for (int i = idx; i >= idx - 6; i--) {
+            pos += entries.get(i).getPositive();
+            tst += entries.get(i).getTests();
+        }
+
+        if (tst == 0) {
+            return -1;
+        }
+        return ((double)pos) / tst;
+    }
+
+
+    public static double findTotalInfected(ArrayList<Entry> entries) {
+        double ans = 0;
+        for (Entry entry : entries) {
+            ans += entry.getPositive();
         }
         return ans;
     }
@@ -93,7 +122,7 @@ public class Entry {
     @Override
     public String toString() {
         String ans = String.format("%d: %d/%d = %.4f%s", day, positive, tests,
-            100 * calcPercentage(), "%");
+            100 * getPercentage(), "%");
         return ans;
     }
 
