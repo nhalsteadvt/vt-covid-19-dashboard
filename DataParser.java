@@ -77,6 +77,47 @@ public class DataParser {
     }
 
 
+////// TODO
+    public double calcMovingAverage(Entry entry) {
+        int idx = -1;
+        for (int i = 0; i < dataCollection.size(); i++) {
+            if (dataCollection.get(i) == entry) {
+                idx = i;
+            }
+        }
+        if (idx < 6) {
+            return -1;
+        }
+
+        int pos = 0;
+        int tst = 0;
+        for (int i = idx; i >= idx - 6; i--) {
+            pos += dataCollection.get(i).getPositive();
+            tst += dataCollection.get(i).getTests();
+        }
+
+        if (tst == 0) {
+            return -1;
+        }
+        return ((double)pos) / tst;
+    }
+
+
+    /**
+     * Finds the total number of positive cases by adding up positive number
+     * from each entry
+     * 
+     * @return int representing total infected in dataset
+     */
+    public int findTotalInfected() {
+        int ans = 0;
+        for (Entry entry : dataCollection) {
+            ans += entry.getPositive();
+        }
+        return ans;
+    }
+
+
     /**
      * This method will parse a file and add entries to the dataCollection
      * object based on contents of the file
@@ -96,12 +137,13 @@ public class DataParser {
         int numLines = lineCounter(dash);
         dashReader.readLine(); // reads first line with headings and no data
         int currLineNum = 1;
-        int lastByte = 0;
 
         // This block parses the rest of the file with the data
-        while (lastByte != -1) {
-            lastByte = dashReader.read();
+        while (currLineNum < numLines) {
+// dashReader.read();
+// dashReader.seek(dashReader.getFilePointer() - 1);
             String line = dashReader.readLine();
+// System.out.println(line);
             if (line == null) {
                 break;
             }
@@ -117,13 +159,26 @@ public class DataParser {
             // the string of the entry after 7d Mov Avg Pos
             String noMovAvgPos = noPos.substring(noPos.indexOf("\t") + 1);
 
+            // gets the date from the .txt file and formats it to be MM/DD
+            String date = line.substring(0, line.indexOf("\t"));
+            if (date.indexOf('/') == 1) {
+                date = "0" + date;
+            }
+            if (date.length() != 5) {
+                date = date.substring(0, 3) + "0" + date.substring(3);
+            }
+            // gets the number of tests from the truncated line
             int tests = Integer.parseInt((noDate.substring(0, noDate.indexOf(
                 "\t"))).replace(",", ""));
+            // gets the number of positive tests from the truncated line
             int positive = Integer.parseInt((noTests.substring(0, noTests
                 .indexOf("\t"))).replace(",", ""));
-            double moving = Double.parseDouble((noPos.substring(0, noPos
-                .indexOf("\t"))).replace(",", ""));
-            Entry temp = new Entry(day, tests, positive, moving);
+            // gets the 7 day moving average from the truncated line
+            double moving = Double.parseDouble((noMovAvgPos.substring(0,
+                noMovAvgPos.indexOf("%")))) / 100;
+
+            // adds a new entry to dataCollection at the front (for order)
+            Entry temp = new Entry(day, date, tests, positive, moving);
             dataCollection.add(0, temp);
         }
 
@@ -169,8 +224,11 @@ public class DataParser {
         StringBuilder sb = new StringBuilder();
         for (int i = 0; i < dataCollection.size(); i++) {
             sb.append(dataCollection.get(i).toString());
-            sb.append(" | " + dataCollection.get(i).calcMovingAverage(
-                dataCollection));
+            sb.append(" | 7 Day Moving Avg: " + String.format(
+                "%.4f%s --> %.1f%s", 100 * calcMovingAverage(dataCollection.get(
+                    i)), "%", 100 * dataCollection.get(i).getMovingPercentage(),
+                "%"));
+            // calcMovingAverage(dataCollection);
             sb.append("\n");
         }
         sb.deleteCharAt(sb.length() - 1);
