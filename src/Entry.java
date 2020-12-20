@@ -4,6 +4,7 @@
  */
 public class Entry {
     private int day;
+    private String date;
     private int tests;
     private int positive;
     private double movingPercentage;
@@ -14,6 +15,8 @@ public class Entry {
      * @param day
      *            how many days since the earliest entry
      *            (starting at 0)
+     * @param date
+     *            the date represented as MM/DD
      * @param tests
      *            how many tests were performed that day
      * @param positive
@@ -21,8 +24,14 @@ public class Entry {
      * @param movingPercentage
      *            the listed 7 day moving average of percent positive tests
      */
-    public Entry(int day, int tests, int positive, double movingPercentage) {
+    public Entry(
+        int day,
+        String date,
+        int tests,
+        int positive,
+        double movingPercentage) {
         this.day = day;
+        this.date = date;
         this.tests = tests;
         this.positive = positive;
         this.movingPercentage = movingPercentage;
@@ -37,6 +46,16 @@ public class Entry {
      */
     public int getDay() {
         return day;
+    }
+
+
+    /**
+     * Gets the date of the entry
+     * 
+     * @return String of date in MM/DD format
+     */
+    public String getDate() {
+        return date;
     }
 
 

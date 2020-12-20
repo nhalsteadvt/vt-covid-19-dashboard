@@ -17,6 +17,7 @@ import javafx.stage.Stage;
  * @author nhalstead
  *
  */
+
 public class Visualizer extends Application {
     private DataParser data;
     private Axis<Number> xAxis;
@@ -38,11 +39,8 @@ public class Visualizer extends Application {
         System.out.println(data.toString());
         System.out.println("total infected: " + data.findTotalInfected());
 
-        // Instantiates the Series object
-        series = new Series<>();
-
         // Sets up the graph to display the moving average
-        setUpMovingAverage();
+        setUpMovingAverage(Variable.MOVING_AVG);
 
         // Creating the line chart
         LineChart<Number, Number> linechart = new LineChart<>(xAxis, yAxis);
@@ -54,13 +52,14 @@ public class Visualizer extends Application {
         Group root = new Group(linechart);
 
         // Setting title to the Stage
-        stage.setTitle("My Covid-19 Graph");
+        stage.setTitle("My Covid-19 Graph: 7 Day Moving Average");
 
         // Creating Buttons
-        Button button1 = new Button("Normalize") {
+        Button button1 = new Button("Calculate") {
             public void fire() {
-                if (!normalized) {
-                    normalizeData(series);
+                if (true) {
+                    setUpMovingAverage(Variable.MOVING_AVG_CALC);
+                    // normalizeData(series);
                 }
             }
         };
@@ -98,25 +97,64 @@ public class Visualizer extends Application {
     }
 
 
-    private void setUpMovingAverage() {
+    private void setUpMovingAverage(Variable type) {
+        if (series != null) {
+            series.getData().clear();
+        }
+        else {
+            series = new Series<>();
+        }
+
         // Defining the x axis
         int numEntries = data.getEntries().size();
         xAxis = new NumberAxis(0, numEntries, numEntries / TICKS);
-        xAxis.setLabel("Days Since 08/03/20");
+        xAxis.setLabel("Days Since " + data.getEntries().get(0).getDate());
 
         // Defining the y axis
         double maxPercent = data.findMaxPercentage();
         yAxis = new NumberAxis(0, CHART_BUFFER_FACTOR * HUNDRED_PERCENT
             * maxPercent, CHART_BUFFER_FACTOR * HUNDRED_PERCENT * maxPercent
                 / TICKS);
-        yAxis.setLabel("Percent positive");
+
+        switch (type) {
+            case MOVING_AVG:
+                yAxis.setLabel("Percent Positive (7 day moving average)");
+                break;
+            case MOVING_AVG_CALC:
+                yAxis.setLabel("Percent Positive (7 day moving average)");
+                break;
+            case DAILY_PERCENTAGE:
+                yAxis.setLabel("Percent Positive (daily)");
+                break;
+        }
 
         // Prepare XYChart.Series object by setting name of data points
-        series.setName("Daily percent positive");
+        switch (type) {
+            case MOVING_AVG:
+                series.setName("Given moving average");
+                break;
+            case MOVING_AVG_CALC:
+                series.setName("Calculated moving average)");
+                break;
+            case DAILY_PERCENTAGE:
+                series.setName("Calculated daily)");
+                break;
+        }
 
         // Adds the data points to the Series object
         for (Entry entry : data.getEntries()) {
-            double percent = data.calcMovingAverage(entry);
+            double percent = -1;
+            switch (type) {
+                case MOVING_AVG:
+                    percent = entry.getMovingPercentage();
+                    break;
+                case MOVING_AVG_CALC:
+                    percent = data.calcMovingAverage(entry);
+                    break;
+                case DAILY_PERCENTAGE:
+                    percent = entry.getPercentage();
+                    break;
+            }
             series.getData().add(new Data<Number, Number>(entry.getDay(), 100
                 * percent));
         }
@@ -134,7 +172,15 @@ public class Visualizer extends Application {
     }
 
 
+    /**
+     * DEPRECATED?
+     * 
+     * @param str
+     *            input (the toString() of an Entry object)
+     * @return percentage from the input
+     */
     public static double findPercent(String str) {
+        System.out.println(str);
         int idx1 = str.indexOf(',') + 1;
         StringBuilder sb = new StringBuilder();
         for (int i = idx1; i < str.length(); i++) {

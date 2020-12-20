@@ -137,12 +137,13 @@ public class DataParser {
         int numLines = lineCounter(dash);
         dashReader.readLine(); // reads first line with headings and no data
         int currLineNum = 1;
-        int lastByte = 0;
 
         // This block parses the rest of the file with the data
-        while (lastByte != -1) {
-            lastByte = dashReader.read();
+        while (currLineNum < numLines) {
+// dashReader.read();
+// dashReader.seek(dashReader.getFilePointer() - 1);
             String line = dashReader.readLine();
+// System.out.println(line);
             if (line == null) {
                 break;
             }
@@ -158,13 +159,26 @@ public class DataParser {
             // the string of the entry after 7d Mov Avg Pos
             String noMovAvgPos = noPos.substring(noPos.indexOf("\t") + 1);
 
+            // gets the date from the .txt file and formats it to be MM/DD
+            String date = line.substring(0, line.indexOf("\t"));
+            if (date.indexOf('/') == 1) {
+                date = "0" + date;
+            }
+            if (date.length() != 5) {
+                date = date.substring(0, 3) + "0" + date.substring(3);
+            }
+            // gets the number of tests from the truncated line
             int tests = Integer.parseInt((noDate.substring(0, noDate.indexOf(
                 "\t"))).replace(",", ""));
+            // gets the number of positive tests from the truncated line
             int positive = Integer.parseInt((noTests.substring(0, noTests
                 .indexOf("\t"))).replace(",", ""));
+            // gets the 7 day moving average from the truncated line
             double moving = Double.parseDouble((noMovAvgPos.substring(0,
                 noMovAvgPos.indexOf("%")))) / 100;
-            Entry temp = new Entry(day, tests, positive, moving);
+
+            // adds a new entry to dataCollection at the front (for order)
+            Entry temp = new Entry(day, date, tests, positive, moving);
             dataCollection.add(0, temp);
         }
 
