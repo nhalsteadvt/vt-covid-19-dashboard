@@ -1,4 +1,7 @@
 # vt-covid-19-dashboard
+Prerequisites: 
+  You must have Java 8 installed and properly configured in order for this project to run by the script given.
+  This is because it relies on the JavaFX library, which is available automatically through Java 8.
 Projection description:
   This will parse a file of copied covid-19 data from the Virginia Tech dashboard.
   This project was done to better calculate trends and better graph the data.
