@@ -1,9 +1,3 @@
-import java.util.ArrayList;
-
-/**
- * 
- */
-
 /**
  * @author nhalstead
  *         The Entry class is used for storing a single point of data (one day)
@@ -23,7 +17,9 @@ public class Entry {
      * @param tests
      *            how many tests were performed that day
      * @param positive
-     *            how many of those tests were positive for Covid-19
+     *            how many of those tests were positive for COVID-19
+     * @param movingPercentage
+     *            the listed 7 day moving average of percent positive tests
      */
     public Entry(int day, int tests, int positive, double movingPercentage) {
         this.day = day;
@@ -74,6 +70,12 @@ public class Entry {
     }
 
 
+    /**
+     * Gets the daily percentage of positive cases divided by tests performed
+     * Note: this may return erroneous percentages due to data backlogs
+     * 
+     * @return double percentage of daily positive tests over daily total tests
+     */
     public double getPercentage() {
         return percentage;
     }
@@ -90,40 +92,6 @@ public class Entry {
             return 0;
         }
         return ((double)positive) / tests;
-    }
-
-
-    public double calcMovingAverage(ArrayList<Entry> entries) {
-        int idx = -1;
-        for (int i = 0; i < entries.size(); i++) {
-            if (entries.get(i) == this) {
-                idx = i;
-            }
-        }
-        if (idx < 6) {
-            return -1;
-        }
-
-        int pos = 0;
-        int tst = 0;
-        for (int i = idx; i >= idx - 6; i--) {
-            pos += entries.get(i).getPositive();
-            tst += entries.get(i).getTests();
-        }
-
-        if (tst == 0) {
-            return -1;
-        }
-        return ((double)pos) / tst;
-    }
-
-
-    public static double findTotalInfected(ArrayList<Entry> entries) {
-        double ans = 0;
-        for (Entry entry : entries) {
-            ans += entry.getPositive();
-        }
-        return ans;
     }
 
 

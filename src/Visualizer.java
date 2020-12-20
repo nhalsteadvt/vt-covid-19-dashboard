@@ -4,9 +4,11 @@ import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Group;
 import javafx.scene.Scene;
+import javafx.scene.chart.Axis;
 import javafx.scene.chart.LineChart;
 import javafx.scene.chart.NumberAxis;
-import javafx.scene.chart.XYChart;
+import javafx.scene.chart.XYChart.Data;
+import javafx.scene.chart.XYChart.Series;
 import javafx.scene.control.Button;
 import javafx.scene.layout.GridPane;
 import javafx.stage.Stage;
@@ -17,43 +19,33 @@ import javafx.stage.Stage;
  */
 public class Visualizer extends Application {
     private DataParser data;
+    private Axis<Number> xAxis;
+    private Axis<Number> yAxis;
+    private Series<Number, Number> series;
+
     private boolean normalized;
+    private final int HUNDRED_PERCENT = 100; // Used for spacing Y axis
+    private final double CHART_BUFFER_FACTOR = 1.2; // Factor by how much extra
+                                                    // room is above Y axis
+    private final int TICKS = 10; // Number of ticks on graph for X and Y axes
 
     @Override
     public void start(Stage stage) throws IOException {
         normalized = false;
         String file = this.getParameters().getUnnamed().get(0);
         data = new DataParser(file);
+
         System.out.println(data.toString());
-// System.out.println("total infected: " + Entry.findTotalInfected(data
-// .getEntries()));
+        System.out.println("total infected: " + data.findTotalInfected());
 
-        // System.out.println("moving average, 38: " + data.getEntries().get(38)
-        // .calcMovingAverage(data.getEntries()));
+        // Instantiates the Series object
+        series = new Series<>();
 
-        // Defining the x axis
-        int numEntries = data.getEntries().size();
-        NumberAxis xAxis = new NumberAxis(0, numEntries, numEntries / 10);
-        xAxis.setLabel("Days Since 08/03/20");
-
-        // Defining the y axis
-        double maxPercent = data.findMaxPercentage();
-        NumberAxis yAxis = new NumberAxis(0, 1.2 * 100 * maxPercent, 0.12 * 100
-            * maxPercent);
-        yAxis.setLabel("Percent positive");
+        // Sets up the graph to display the moving average
+        setUpMovingAverage();
 
         // Creating the line chart
-        LineChart linechart = new LineChart(xAxis, yAxis);
-
-        // Prepare XYChart.Series objects by setting data
-        XYChart.Series series = new XYChart.Series();
-        series.setName("Daily percent positive");
-
-        for (Entry entry : data.getEntries()) {
-            double percent = entry.getPercentage();
-            series.getData().add(new XYChart.Data(entry.getDay(), 100
-                * percent));
-        }
+        LineChart<Number, Number> linechart = new LineChart<>(xAxis, yAxis);
 
         // Setting the data to Line chart
         linechart.getData().add(series);
@@ -106,7 +98,32 @@ public class Visualizer extends Application {
     }
 
 
-    private void normalizeData(XYChart.Series series) {
+    private void setUpMovingAverage() {
+        // Defining the x axis
+        int numEntries = data.getEntries().size();
+        xAxis = new NumberAxis(0, numEntries, numEntries / TICKS);
+        xAxis.setLabel("Days Since 08/03/20");
+
+        // Defining the y axis
+        double maxPercent = data.findMaxPercentage();
+        yAxis = new NumberAxis(0, CHART_BUFFER_FACTOR * HUNDRED_PERCENT
+            * maxPercent, CHART_BUFFER_FACTOR * HUNDRED_PERCENT * maxPercent
+                / TICKS);
+        yAxis.setLabel("Percent positive");
+
+        // Prepare XYChart.Series object by setting name of data points
+        series.setName("Daily percent positive");
+
+        // Adds the data points to the Series object
+        for (Entry entry : data.getEntries()) {
+            double percent = data.calcMovingAverage(entry);
+            series.getData().add(new Data<Number, Number>(entry.getDay(), 100
+                * percent));
+        }
+    }
+
+
+    private void normalizeData(Series<Number, Number> series) {
         for (int i = data.getEntries().size() - 1; i >= 0; i--) {
             double percent = findPercent(series.getData().get(i).toString());
             if (percent == 0 || percent > 100) {
