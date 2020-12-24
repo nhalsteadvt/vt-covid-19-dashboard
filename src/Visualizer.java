@@ -4,7 +4,6 @@ import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Group;
 import javafx.scene.Scene;
-import javafx.scene.chart.Axis;
 import javafx.scene.chart.LineChart;
 import javafx.scene.chart.NumberAxis;
 import javafx.scene.chart.XYChart.Data;
@@ -19,12 +18,21 @@ import javafx.stage.Stage;
  */
 
 public class Visualizer extends Application {
+    private Stage stage;
     private DataParser data;
-    private Axis<Number> xAxis;
-    private Axis<Number> yAxis;
+    private NumberAxis xAxis;
+    private NumberAxis yAxis;
     private Series<Number, Number> series;
+    private LineChart<Number, Number> linechart;
+    private Group root;
+    private GridPane gridPane;
+    private Button[] buttons;
 
+    private boolean firstTimeSetUp;
     private boolean normalized;
+    private Variable type = Variable.MOVING_AVG; // which variable type the
+                                                 // graph
+                                                 // is displaying
     private final int HUNDRED_PERCENT = 100; // Used for spacing Y axis
     private final double CHART_BUFFER_FACTOR = 1.2; // Factor by how much extra
                                                     // room is above Y axis
@@ -32,6 +40,7 @@ public class Visualizer extends Application {
 
     @Override
     public void start(Stage stage) throws IOException {
+        this.stage = stage;
         normalized = false;
         String file = this.getParameters().getUnnamed().get(0);
         data = new DataParser(file);
@@ -40,32 +49,24 @@ public class Visualizer extends Application {
         System.out.println("total infected: " + data.findTotalInfected());
 
         // Sets up the graph to display the moving average
-        setUpMovingAverage(Variable.MOVING_AVG);
+        firstTimeSetUp = true;
+        setUpMovingAverage(type);
+        firstTimeSetUp = false;
 
         // Creating the line chart
-        LineChart<Number, Number> linechart = new LineChart<>(xAxis, yAxis);
+        linechart = new LineChart<>(xAxis, yAxis);
 
         // Setting the data to Line chart
         linechart.getData().add(series);
 
         // Creating a Group object
-        Group root = new Group(linechart);
+        root = new Group(linechart);
 
         // Setting title to the Stage
-        stage.setTitle("My Covid-19 Graph: 7 Day Moving Average");
-
-        // Creating Buttons
-        Button button1 = new Button("Calculate") {
-            public void fire() {
-                if (true) {
-                    setUpMovingAverage(Variable.MOVING_AVG_CALC);
-                    // normalizeData(series);
-                }
-            }
-        };
+        stage.setTitle("My Covid-19 Graph");
 
         // Creating a Grid Pane
-        GridPane gridPane = new GridPane();
+        gridPane = new GridPane();
 
         // Setting size for the pane
         gridPane.setMinSize(600, 400);
@@ -80,14 +81,14 @@ public class Visualizer extends Application {
         // Setting the Grid alignment
         gridPane.setAlignment(Pos.CENTER);
 
-        // Arranging all the nodes in the grid
-        gridPane.add(button1, 48, 0);
+        // Creating Buttons
+        buttonSetUp();
 
         // add gridPane to root
         root.getChildren().add(gridPane);
 
         // Creating a scene object
-        Scene scene = new Scene(root, 600, 400);
+        Scene scene = new Scene(root, 650, 400);
 
         // Adding scene to the stage
         stage.setScene(scene);
@@ -98,6 +99,7 @@ public class Visualizer extends Application {
 
 
     private void setUpMovingAverage(Variable type) {
+        normalized = false;
         if (series != null) {
             series.getData().clear();
         }
@@ -107,16 +109,60 @@ public class Visualizer extends Application {
 
         // Defining the x axis
         int numEntries = data.getEntries().size();
-        xAxis = new NumberAxis(0, numEntries, numEntries / TICKS);
+        if (firstTimeSetUp) {
+            xAxis = new NumberAxis(0, numEntries, numEntries / TICKS);
+        }
+        else {
+            xAxis.setUpperBound(numEntries);
+            xAxis.setTickUnit(numEntries / TICKS);
+        }
         xAxis.setLabel("Days Since " + data.getEntries().get(0).getDate());
 
         // Defining the y axis
         double maxPercent = data.findMaxPercentage();
-        yAxis = new NumberAxis(0, CHART_BUFFER_FACTOR * HUNDRED_PERCENT
-            * maxPercent, CHART_BUFFER_FACTOR * HUNDRED_PERCENT * maxPercent
-                / TICKS);
+        int totalInfected = data.findTotalInfected();
+        int totalTests = data.findTotalTests();
+
+        if (firstTimeSetUp) {
+            switch (type) {
+                case TOTAL_POS:
+                    yAxis = new NumberAxis(0, CHART_BUFFER_FACTOR
+                        * totalInfected, CHART_BUFFER_FACTOR * totalInfected
+                            / TICKS);
+                    break;
+                case TOTAL_TESTS:
+                    yAxis = new NumberAxis(0, CHART_BUFFER_FACTOR
+                        * totalInfected, CHART_BUFFER_FACTOR * totalTests
+                            / TICKS);
+                    break;
+                default:
+                    yAxis = new NumberAxis(0, CHART_BUFFER_FACTOR
+                        * HUNDRED_PERCENT * maxPercent, CHART_BUFFER_FACTOR
+                            * HUNDRED_PERCENT * maxPercent / TICKS);
+
+            }
+        }
+        else {
+            switch (type) {
+                case TOTAL_POS:
+                    yAxis.setUpperBound(CHART_BUFFER_FACTOR * totalInfected);
+                    yAxis.setTickUnit(CHART_BUFFER_FACTOR * totalInfected
+                        / TICKS);
+                    break;
+                case TOTAL_TESTS:
+                    yAxis.setUpperBound(CHART_BUFFER_FACTOR * totalTests);
+                    yAxis.setTickUnit(CHART_BUFFER_FACTOR * totalTests / TICKS);
+                    break;
+                default:
+                    yAxis.setUpperBound(CHART_BUFFER_FACTOR * HUNDRED_PERCENT
+                        * maxPercent);
+                    yAxis.setTickUnit(CHART_BUFFER_FACTOR * HUNDRED_PERCENT
+                        * maxPercent / 10);
+            }
+        }
 
         switch (type) {
+            default:
             case MOVING_AVG:
                 yAxis.setLabel("Percent Positive (7 day moving average)");
                 break;
@@ -126,6 +172,12 @@ public class Visualizer extends Application {
             case DAILY_PERCENTAGE:
                 yAxis.setLabel("Percent Positive (daily)");
                 break;
+            case TOTAL_POS:
+                yAxis.setLabel("Total Positive");
+                break;
+            case TOTAL_TESTS:
+                yAxis.setLabel("Total Tests");
+                break;
         }
 
         // Prepare XYChart.Series object by setting name of data points
@@ -134,37 +186,125 @@ public class Visualizer extends Application {
                 series.setName("Given moving average");
                 break;
             case MOVING_AVG_CALC:
-                series.setName("Calculated moving average)");
+                series.setName("Calculated moving average");
                 break;
             case DAILY_PERCENTAGE:
-                series.setName("Calculated daily)");
+                series.setName("Calculated daily");
                 break;
+            case TOTAL_POS:
+                series.setName("Total Positive Cases");
+                break;
+            case TOTAL_TESTS:
+                series.setName("Total Tests");
+                break;
+            default:
+                series.setName("Data Unknown");
+                break;
+
         }
 
         // Adds the data points to the Series object
         for (Entry entry : data.getEntries()) {
-            double percent = -1;
+            double value = -1;
             switch (type) {
+                default:
                 case MOVING_AVG:
-                    percent = entry.getMovingPercentage();
+                    value = HUNDRED_PERCENT * entry.getMovingPercentage();
                     break;
                 case MOVING_AVG_CALC:
-                    percent = data.calcMovingAverage(entry);
+                    value = HUNDRED_PERCENT * data.calcMovingAverage(entry);
                     break;
                 case DAILY_PERCENTAGE:
-                    percent = entry.getPercentage();
+                    value = HUNDRED_PERCENT * entry.getPercentage();
                     break;
+                case TOTAL_POS:
+                    value = data.calcTotalCases(entry);
+                    break;
+                case TOTAL_TESTS:
+                    value = data.calcTotalTests(entry);
+                    break;
+
             }
-            series.getData().add(new Data<Number, Number>(entry.getDay(), 100
-                * percent));
+            series.getData().add(new Data<Number, Number>(entry.getDay(),
+                value));
         }
+
+    }
+
+
+    private void buttonSetUp() {
+        buttons = new Button[6];
+
+        buttons[0] = new Button("Normalize") {
+            public void fire() {
+                if (normalized != true) {
+                    normalized = true;
+                    normalizeData(series);
+                }
+            }
+        };
+
+        buttons[1] = new Button("Given Mov Avg") {
+            public void fire() {
+                if (type != Variable.MOVING_AVG) {
+                    type = Variable.MOVING_AVG;
+                    setUpMovingAverage(Variable.MOVING_AVG);
+                }
+            }
+        };
+
+        buttons[2] = new Button("Calc Mov Avg") {
+            public void fire() {
+                if (type != Variable.MOVING_AVG_CALC) {
+                    type = Variable.MOVING_AVG_CALC;
+                    setUpMovingAverage(Variable.MOVING_AVG_CALC);
+                }
+            }
+        };
+
+        buttons[3] = new Button("Daily Percent") {
+            public void fire() {
+                if (type != Variable.DAILY_PERCENTAGE) {
+                    type = Variable.DAILY_PERCENTAGE;
+                    setUpMovingAverage(Variable.DAILY_PERCENTAGE);
+                }
+            }
+        };
+
+        buttons[4] = new Button("Total Positive") {
+            public void fire() {
+                if (type != Variable.TOTAL_POS) {
+                    type = Variable.TOTAL_POS;
+                    setUpMovingAverage(Variable.TOTAL_POS);
+                }
+            }
+        };
+
+        buttons[5] = new Button("Total Tests") {
+            public void fire() {
+                if (type != Variable.TOTAL_TESTS) {
+                    type = Variable.TOTAL_TESTS;
+                    setUpMovingAverage(Variable.TOTAL_TESTS);
+                }
+            }
+        };
+
+        // Arranging all the nodes in the grid
+        gridPane.add(buttons[0], 48, 16);
+        gridPane.add(buttons[1], 48, 0);
+        gridPane.add(buttons[2], 48, 2);
+        gridPane.add(buttons[3], 48, 4);
+        gridPane.add(buttons[4], 48, 6);
+        gridPane.add(buttons[5], 48, 8);
+
     }
 
 
     private void normalizeData(Series<Number, Number> series) {
         for (int i = data.getEntries().size() - 1; i >= 0; i--) {
-            double percent = findPercent(series.getData().get(i).toString());
-            if (percent == 0 || percent > 100) {
+            double value = findValue(series.getData().get(i).toString());
+            if (value <= 0 || (value > 100 && type != Variable.TOTAL_POS
+                && type != Variable.TOTAL_TESTS)) {
                 series.getData().remove(i);
             }
         }
@@ -173,18 +313,18 @@ public class Visualizer extends Application {
 
 
     /**
-     * DEPRECATED?
+     * Finds the percentage (or value) from a point in a Series object toString
      * 
      * @param str
      *            input (the toString() of an Entry object)
      * @return percentage from the input
      */
-    public static double findPercent(String str) {
-        System.out.println(str);
+    public static double findValue(String str) {
         int idx1 = str.indexOf(',') + 1;
         StringBuilder sb = new StringBuilder();
         for (int i = idx1; i < str.length(); i++) {
-            if (Character.isDigit(str.charAt(i)) || str.charAt(i) == '.') {
+            if (Character.isDigit(str.charAt(i)) || str.charAt(i) == '.' || str
+                .charAt(i) == '-') {
                 sb.append(str.charAt(i));
             }
             else {

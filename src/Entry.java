@@ -120,8 +120,8 @@ public class Entry {
      */
     @Override
     public String toString() {
-        String ans = String.format("%d: %d/%d = %.4f%s", day, positive, tests,
-            100 * getPercentage(), "%");
+        String ans = String.format("%d: %s | %d/%d = %.4f%s", day, date,
+            positive, tests, 100 * getPercentage(), "%");
         return ans;
     }
 

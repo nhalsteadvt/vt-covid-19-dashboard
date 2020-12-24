@@ -77,7 +77,7 @@ public class DataParser {
     }
 
 
-////// TODO
+////// DESCRIPTION TODO
     public double calcMovingAverage(Entry entry) {
         int idx = -1;
         for (int i = 0; i < dataCollection.size(); i++) {
@@ -85,13 +85,19 @@ public class DataParser {
                 idx = i;
             }
         }
-        if (idx < 6) {
+        if (idx == -1) {
             return -1;
+        }
+        if (idx < 1) {
+            return entry.getPercentage();
         }
 
         int pos = 0;
         int tst = 0;
         for (int i = idx; i >= idx - 6; i--) {
+            if (i < 0) {
+                break;
+            }
             pos += dataCollection.get(i).getPositive();
             tst += dataCollection.get(i).getTests();
         }
@@ -100,6 +106,62 @@ public class DataParser {
             return -1;
         }
         return ((double)pos) / tst;
+    }
+
+
+    /**
+     * Calculates the total number of positive cases up to a certain entry in
+     * the dataset
+     * 
+     * @param entry
+     *            the stopping date in calculating the total
+     * @return int representing the total number of cases up until entry
+     */
+    public int calcTotalCases(Entry entry) {
+        int idx = -1;
+        for (int i = 0; i < dataCollection.size(); i++) {
+            if (dataCollection.get(i) == entry) {
+                idx = i;
+            }
+        }
+        if (idx == -1) {
+            return -1;
+        }
+
+        int pos = 0;
+        for (int i = idx; i >= 0; i--) {
+            pos += dataCollection.get(i).getPositive();
+        }
+
+        return pos;
+    }
+
+
+    /**
+     * Calculates the total number of tests up to a certain entry in
+     * the dataset
+     * 
+     * @param entry
+     *            the stopping date in calculating the total
+     * @return int representing the total number of tests up until entry
+     */
+    public int calcTotalTests(Entry entry) {
+        int idx = -1;
+        for (int i = 0; i < dataCollection.size(); i++) {
+            if (dataCollection.get(i) == entry) {
+                idx = i;
+            }
+        }
+        if (idx == -1) {
+            return -1;
+        }
+
+        int pos = 0;
+        for (int i = idx; i >= 0; i--) {
+            pos += dataCollection.get(i).getTests();
+        }
+
+        return pos;
     }
 
 
@@ -113,6 +175,21 @@ public class DataParser {
         int ans = 0;
         for (Entry entry : dataCollection) {
             ans += entry.getPositive();
+        }
+        return ans;
+    }
+
+
+    /**
+     * Finds the total number of tests by adding up daily testing number
+     * from each entry
+     * 
+     * @return int representing total tests in dataset
+     */
+    public int findTotalTests() {
+        int ans = 0;
+        for (Entry entry : dataCollection) {
+            ans += entry.getTests();
         }
         return ans;
     }
@@ -225,10 +302,10 @@ public class DataParser {
         for (int i = 0; i < dataCollection.size(); i++) {
             sb.append(dataCollection.get(i).toString());
             sb.append(" | 7 Day Moving Avg: " + String.format(
-                "%.4f%s --> %.1f%s", 100 * calcMovingAverage(dataCollection.get(
-                    i)), "%", 100 * dataCollection.get(i).getMovingPercentage(),
-                "%"));
-            // calcMovingAverage(dataCollection);
+                "%.4f%% --> %.1f%% | Total: %d", 100 * calcMovingAverage(
+                    dataCollection.get(i)), 100 * dataCollection.get(i)
+                        .getMovingPercentage(), calcTotalCases(dataCollection
+                            .get(i))));
             sb.append("\n");
         }
         sb.deleteCharAt(sb.length() - 1);
