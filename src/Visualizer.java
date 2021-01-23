@@ -122,6 +122,11 @@ public class Visualizer extends Application {
         double maxPercent = data.findMaxPercentage();
         int totalInfected = data.findTotalInfected();
         int totalTests = data.findTotalTests();
+        int maxPositive = data.findMaxPositive();
+        int maxTests = data.findMaxTests();
+
+// System.out.println("type: " + type);
+// System.out.println("first: " + firstTimeSetUp);
 
         if (firstTimeSetUp) {
             switch (type) {
@@ -134,6 +139,14 @@ public class Visualizer extends Application {
                     yAxis = new NumberAxis(0, CHART_BUFFER_FACTOR
                         * totalInfected, CHART_BUFFER_FACTOR * totalTests
                             / TICKS);
+                    break;
+                case DAILY_POS:
+                    yAxis = new NumberAxis(0, CHART_BUFFER_FACTOR * maxPositive,
+                        CHART_BUFFER_FACTOR * maxPositive / TICKS);
+                    break;
+                case DAILY_TESTS:
+                    yAxis = new NumberAxis(0, CHART_BUFFER_FACTOR * maxTests,
+                        CHART_BUFFER_FACTOR * maxTests / TICKS);
                     break;
                 default:
                     yAxis = new NumberAxis(0, CHART_BUFFER_FACTOR
@@ -153,6 +166,15 @@ public class Visualizer extends Application {
                     yAxis.setUpperBound(CHART_BUFFER_FACTOR * totalTests);
                     yAxis.setTickUnit(CHART_BUFFER_FACTOR * totalTests / TICKS);
                     break;
+                case DAILY_POS:
+                    yAxis.setUpperBound(CHART_BUFFER_FACTOR * maxPositive);
+                    yAxis.setTickUnit(CHART_BUFFER_FACTOR * maxPositive
+                        / TICKS);
+                    break;
+                case DAILY_TESTS:
+                    yAxis.setUpperBound(CHART_BUFFER_FACTOR * maxTests);
+                    yAxis.setTickUnit(CHART_BUFFER_FACTOR * maxTests / TICKS);
+                    break;
                 default:
                     yAxis.setUpperBound(CHART_BUFFER_FACTOR * HUNDRED_PERCENT
                         * maxPercent);
@@ -169,8 +191,11 @@ public class Visualizer extends Application {
             case MOVING_AVG_CALC:
                 yAxis.setLabel("Percent Positive (7 day moving average)");
                 break;
-            case DAILY_PERCENTAGE:
-                yAxis.setLabel("Percent Positive (daily)");
+            case DAILY_POS:
+                yAxis.setLabel("Positive Cases (daily)");
+                break;
+            case DAILY_TESTS:
+                yAxis.setLabel("Tests (daily)");
                 break;
             case TOTAL_POS:
                 yAxis.setLabel("Total Positive");
@@ -188,8 +213,11 @@ public class Visualizer extends Application {
             case MOVING_AVG_CALC:
                 series.setName("Calculated moving average");
                 break;
-            case DAILY_PERCENTAGE:
-                series.setName("Calculated daily");
+            case DAILY_POS:
+                series.setName("Daily Cases");
+                break;
+            case DAILY_TESTS:
+                series.setName("Daily Tests");
                 break;
             case TOTAL_POS:
                 series.setName("Total Positive Cases");
@@ -214,8 +242,11 @@ public class Visualizer extends Application {
                 case MOVING_AVG_CALC:
                     value = HUNDRED_PERCENT * data.calcMovingAverage(entry);
                     break;
-                case DAILY_PERCENTAGE:
-                    value = HUNDRED_PERCENT * entry.getPercentage();
+                case DAILY_POS:
+                    value = entry.getPositive();
+                    break;
+                case DAILY_TESTS:
+                    value = entry.getTests();
                     break;
                 case TOTAL_POS:
                     value = data.calcTotalCases(entry);
@@ -232,8 +263,12 @@ public class Visualizer extends Application {
     }
 
 
+    /**
+     * Creates the button array and each button
+     * Then adds button to gridpane
+     */
     private void buttonSetUp() {
-        buttons = new Button[6];
+        buttons = new Button[7];
 
         buttons[0] = new Button("Normalize") {
             public void fire() {
@@ -262,16 +297,25 @@ public class Visualizer extends Application {
             }
         };
 
-        buttons[3] = new Button("Daily Percent") {
+        buttons[3] = new Button("Daily Positive") {
             public void fire() {
-                if (type != Variable.DAILY_PERCENTAGE) {
-                    type = Variable.DAILY_PERCENTAGE;
-                    setUpMovingAverage(Variable.DAILY_PERCENTAGE);
+                if (type != Variable.DAILY_POS) {
+                    type = Variable.DAILY_POS;
+                    setUpMovingAverage(Variable.DAILY_POS);
                 }
             }
         };
 
-        buttons[4] = new Button("Total Positive") {
+        buttons[4] = new Button("Daily Tests") {
+            public void fire() {
+                if (type != Variable.DAILY_TESTS) {
+                    type = Variable.DAILY_TESTS;
+                    setUpMovingAverage(Variable.DAILY_TESTS);
+                }
+            }
+        };
+
+        buttons[5] = new Button("Total Positive") {
             public void fire() {
                 if (type != Variable.TOTAL_POS) {
                     type = Variable.TOTAL_POS;
@@ -280,7 +324,7 @@ public class Visualizer extends Application {
             }
         };
 
-        buttons[5] = new Button("Total Tests") {
+        buttons[6] = new Button("Total Tests") {
             public void fire() {
                 if (type != Variable.TOTAL_TESTS) {
                     type = Variable.TOTAL_TESTS;
@@ -296,6 +340,7 @@ public class Visualizer extends Application {
         gridPane.add(buttons[3], 48, 4);
         gridPane.add(buttons[4], 48, 6);
         gridPane.add(buttons[5], 48, 8);
+        gridPane.add(buttons[6], 48, 10);
 
     }
 
@@ -303,8 +348,8 @@ public class Visualizer extends Application {
     private void normalizeData(Series<Number, Number> series) {
         for (int i = data.getEntries().size() - 1; i >= 0; i--) {
             double value = findValue(series.getData().get(i).toString());
-            if (value <= 0 || (value > 100 && type != Variable.TOTAL_POS
-                && type != Variable.TOTAL_TESTS)) {
+            if (value <= 0 || (value > 100 && type == Variable.MOVING_AVG
+                || type == Variable.MOVING_AVG_CALC)) {
                 series.getData().remove(i);
             }
         }

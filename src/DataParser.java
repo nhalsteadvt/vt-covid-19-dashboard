@@ -77,6 +77,40 @@ public class DataParser {
     }
 
 
+    /**
+     * Finds the maximum daily infected in the list of Entry objects
+     * 
+     * @return int representing the maximum daily positive number of cases
+     */
+    public int findMaxPositive() {
+        int ans = -1;
+        for (Entry entry : dataCollection) {
+            double positive = entry.getPositive();
+            if (positive > ans) {
+                ans = entry.getPositive();
+            }
+        }
+        return ans;
+    }
+
+
+    /**
+     * Finds the maximum daily tests in the list of Entry objects
+     * 
+     * @return int representing the maximum daily number of tests
+     */
+    public int findMaxTests() {
+        int ans = -1;
+        for (Entry entry : dataCollection) {
+            double tests = entry.getTests();
+            if (tests > ans) {
+                ans = entry.getTests();
+            }
+        }
+        return ans;
+    }
+
+
 ////// DESCRIPTION TODO
     public double calcMovingAverage(Entry entry) {
         int idx = -1;

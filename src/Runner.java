@@ -12,7 +12,7 @@ public class Runner {
      *            permitted
      */
     public static void main(String[] args) {
-        String[] backup = new String[] { "Data\\\\dashboard.txt" };
+        String[] backup = new String[] { "Data\\\\dashboard2020F.txt" };
         if (args.length != 1) {
             args = backup;
         }
