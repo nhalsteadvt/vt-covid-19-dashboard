@@ -2,7 +2,9 @@
 color 0a
 
 set prefix=..\Data\
-SET PATH=C:\Program Files\Java\jdk1.8.0_271\bin
+:: change this to a path that contains a Java version 8 JDK if it's not the default
+:: this is for JavaFX to work (Java 11 does not automatically include JavaFX)
+:: SET PATH=C:\Program Files\Java\jdk1.8.0_271\bin
 
 :START
 cls
