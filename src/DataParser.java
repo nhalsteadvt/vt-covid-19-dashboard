@@ -77,6 +77,18 @@ public class DataParser {
     }
 
 
+    public double findMaxMovingPercentage() {
+        double ans = -1;
+        for (Entry entry : dataCollection) {
+            double percent = entry.getMovingPercentage();
+            if (percent > ans && percent <= 1) {
+                ans = entry.getMovingPercentage();
+            }
+        }
+        return ans;
+    }
+
+
     /**
      * Finds the maximum daily infected in the list of Entry objects
      * 
@@ -335,11 +347,10 @@ public class DataParser {
         StringBuilder sb = new StringBuilder();
         for (int i = 0; i < dataCollection.size(); i++) {
             sb.append(dataCollection.get(i).toString());
-            sb.append(" | 7 Day Moving Avg: " + String.format(
-                "%.4f%% --> %.1f%% | Total: %d", 100 * calcMovingAverage(
-                    dataCollection.get(i)), 100 * dataCollection.get(i)
-                        .getMovingPercentage(), calcTotalCases(dataCollection
-                            .get(i))));
+            sb.append(" | Total Cases Over Tests " + String.format(
+                "%4d/%-5d | 7Day Moving Avg %.4f%%", calcTotalCases(
+                    dataCollection.get(i)), calcTotalTests(dataCollection.get(
+                        i)), 100 * calcMovingAverage(dataCollection.get(i))));
             sb.append("\n");
         }
         sb.deleteCharAt(sb.length() - 1);

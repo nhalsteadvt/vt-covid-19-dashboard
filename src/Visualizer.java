@@ -119,7 +119,7 @@ public class Visualizer extends Application {
         xAxis.setLabel("Days Since " + data.getEntries().get(0).getDate());
 
         // Defining the y axis
-        double maxPercent = data.findMaxPercentage();
+        double maxPercent = data.findMaxMovingPercentage();
         int totalInfected = data.findTotalInfected();
         int totalTests = data.findTotalTests();
         int maxPositive = data.findMaxPositive();
@@ -293,6 +293,7 @@ public class Visualizer extends Application {
                 if (type != Variable.MOVING_AVG_CALC) {
                     type = Variable.MOVING_AVG_CALC;
                     setUpMovingAverage(Variable.MOVING_AVG_CALC);
+                    // buttons[0].setText("Test");
                 }
             }
         };
